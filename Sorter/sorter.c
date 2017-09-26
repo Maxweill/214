@@ -27,13 +27,15 @@
 #include <string.h>
 #include "Sorter.h"
 
+
 int main(int argc, char **argv)
 {
 	
-	char buffer[1000];
+	//char buffer[1000];
+	char *buffer = malloc(1000);
 	fgets(buffer,1000,stdin);
 	
-	/*while(fgets(buffer, 1000, stdin)){
+	/*while(fgets(&buffer, 1000, stdin)){
 		
 		printf("%s", buffer);
 		
@@ -42,37 +44,40 @@ int main(int argc, char **argv)
 	}*/
 	fgets(buffer,1000,stdin);
 	struct movie *a = malloc(sizeof(movie));
-	a->color=strtok(buffer,",");
-	a->director_name=strtok(NULL,",");
-	a->num_critic_for_reviews=atoi(strtok(NULL,","));
-	a->duration=atoi(strtok(NULL,","));
-	a->director_facebook_likes=atoi(strtok(NULL,","));
-	a->actor_3_facebook_likes=atoi(strtok(NULL,","));
-	a->actor_2_name=strtok(NULL,",");
-	a->actor_1_facebook_likes=atoi(strtok(NULL,","));
-	a->gross=atoi(strtok(NULL,","));
-	a->genres=strtok(NULL,",");
-	a->actor_1_name=strtok(NULL,",");
-	a->movie_title=strtok(NULL,"Â ");
+	a->color=strsep(&buffer,",");
+	a->director_name=strsep(&buffer,",");
+	
+	a->num_critic_for_reviews=atoi(strsep(&buffer,","));
+	a->duration=atoi(strsep(&buffer,","));
+	
+	a->director_facebook_likes=atoi(strsep(&buffer,","));
+	a->actor_3_facebook_likes=atoi(strsep(&buffer,","));
+	a->actor_2_name=strsep(&buffer,",");
+	a->actor_1_facebook_likes=atoi(strsep(&buffer,","));
+	a->gross=atoi(strsep(&buffer,","));
+	a->genres=strsep(&buffer,",");
+	a->actor_1_name=strsep(&buffer,",");
+	a->movie_title=strsep(&buffer,"Â ");
 	if(a->movie_title[0] =='\"')
 	{a->movie_title=a->movie_title+1;}
-	strtok(NULL,",");
-	a->num_voted_users=atoi(strtok(NULL,","));
-	a->cast_total_facebook_likes=atoi(strtok(NULL,","));
-	a->actor_3_name=strtok(NULL,",");
-	a->facenumber_in_poster=atoi(strtok(NULL,","));
-	a->plot_keywords=strtok(NULL,",");
-	a->movie_imdb_link=strtok(NULL,",");
-	a->num_user_for_reviews=atoi(strtok(NULL,","));
-	a->language=strtok(NULL,",");
-	a->country=strtok(NULL,",");
-	a->content_rating=strtok(NULL,",");
-	a->budget=atoi(strtok(NULL,","));
-	a->title_year=atoi(strtok(NULL,","));
-	a->actor_2_facebook_likes=atoi(strtok(NULL,","));
-	a->imdb_score_num=atoi(strtok(NULL,","));
-	a->aspect_ratio=atoi(strtok(NULL,","));
-	a->movie_facebook_likes=atoi(strtok(NULL,","));
+	strsep(&buffer,",");
+	
+	a->num_voted_users=atoi(strsep(&buffer,","));
+	a->cast_total_facebook_likes=atoi(strsep(&buffer,","));
+	a->actor_3_name=strsep(&buffer,",");
+	a->facenumber_in_poster=atoi(strsep(&buffer,","));
+	a->plot_keywords=strsep(&buffer,",");
+	a->movie_imdb_link=strsep(&buffer,",");
+	a->num_user_for_reviews=atoi(strsep(&buffer,","));
+	a->language=strsep(&buffer,",");
+	a->country=strsep(&buffer,",");
+	a->content_rating=strsep(&buffer,",");
+	a->budget=atoi(strsep(&buffer,","));
+	a->title_year=atoi(strsep(&buffer,","));
+	a->actor_2_facebook_likes=atoi(strsep(&buffer,","));
+	a->imdb_score_num=atoi(strsep(&buffer,","));
+	a->aspect_ratio=atoi(strsep(&buffer,","));
+	a->movie_facebook_likes=atoi(strsep(&buffer,","));
 	
 	
 	printf("%s\n",a->movie_title);
