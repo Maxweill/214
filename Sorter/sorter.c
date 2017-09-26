@@ -42,6 +42,7 @@ int main(int argc, char **argv)
 
 		
 	}*/
+	int num = 1;
 	fgets(buffer,1000,stdin);
 	struct movie *a = malloc(sizeof(movie));
 	a->color=strsep(&buffer,",");
