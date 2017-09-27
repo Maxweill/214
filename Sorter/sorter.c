@@ -91,13 +91,16 @@ int main(int argc, char **argv){
 			//STRING - actor 1 name
 			token = strsep(&buffer,",");
 				array[i].actor_1_name=malloc(strlen(token)+1);
-				strcpy(array[i].genres,token);
+				strcpy(array[i].actor_1_name,token);
 			//STRING - movie title
 			token = strsep(&buffer,"Â ");
 				array[i].movie_title=malloc(strlen(token)+1);
 				strcpy(array[i].movie_title,token);
+				
 				if(array[i].movie_title[0] =='\"'){
-				array[i].movie_title = array[i].movie_title+1;
+				free(array[i].movie_title);
+				array[i].movie_title = malloc(strlen(token));
+				strcpy(array[i].movie_title,token+1);
 				}
 			//skip
 			strsep(&buffer,",");
@@ -160,7 +163,7 @@ int main(int argc, char **argv){
 	}
 	
 	
-	int index = 0;
+	int index;
 	
 	for(index = 0; index <= i; index++){
 		free(array[index].color);
@@ -180,7 +183,6 @@ int main(int argc, char **argv){
 	
 	free(array);
 	free(buffer);
-	free(hold);
 	return 0;
 }
 
