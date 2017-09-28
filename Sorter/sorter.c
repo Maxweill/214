@@ -129,18 +129,21 @@ int main(int argc, char **argv) {
 		strcpy(array[i].actor_1_name,token);
 		
 		// 12) STRING - Movie title
-		token = strsep(&buffer,"Â ");
-		array[i].movie_title=malloc(strlen(token)+1);
-		strcpy(array[i].movie_title,token);
-		
-		if(array[i].movie_title[0] =='\"'){
-			free(array[i].movie_title);
+		if(buffer[0]=='\"')
+		{
+			buffer=buffer+1;
+			token = strsep(&buffer,"\"");
 			array[i].movie_title = malloc(strlen(token));
-			strcpy(array[i].movie_title,token+1);
+			strcpy(array[i].movie_title,token);
+			strsep(&buffer, ",");	
+		}
+		else
+		{
+			token = strsep(&buffer,",");
+			array[i].movie_title=malloc(strlen(token)+1);
+			strcpy(array[i].movie_title,token);
 		}
 		
-		//skip
-		strsep(&buffer, ",");
 			
 		// 13) INT - Num_voted_users
 		token = strsep(&buffer,",");
@@ -283,7 +286,7 @@ int main(int argc, char **argv) {
 		printf("%f\n", array[i].imdb_score_num);
 		printf("%f\n", array[i].aspect_ratio);
 		printf("%i\n", array[i].movie_facebook_likes);
-		
+
 		//array[i] = *a;
 		
 		i++;
