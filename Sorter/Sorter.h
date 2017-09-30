@@ -45,8 +45,7 @@ typedef struct movie {
 	
 } movie;
 
-
-
+void trim(char* str);
 
 //Suggestion: prototype a mergesort function
 
