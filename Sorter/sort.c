@@ -16,23 +16,51 @@
 
 
 int main(int argc, char **argv) {
-	
-	// ERROR CHECKING
-	if(argc != 3){ //no or too many arguments
-		printf("Invalid, input must contain 3 arguments.\n-> For example: ./sorter -c  movie_title\n");
-		return 0;
-	}
-	
-	char* col = argv[2]; //category/column that needs to be sorted
-	int category = checkColumn(col);
-	
-	//char buffer[1000];
 	char *buffer = malloc(1000);
 	char *hold = buffer;
 	int size = 128;
 	int i = 0;
 	
 	fgets(buffer, 1000, stdin);
+	
+	if (argv[1][0] != '-' || argv[1][1] != 'c')
+	{
+		printf("ERROR:Expected '-c' as first argument.\n");
+		return -1;
+	}
+	if (argv[2] == '\0')
+	{
+		printf("ERROR:Invalid input, one or more arguments are null.\n");
+		return -1;
+	}
+	char *token = strsep(&buffer, ",");
+	int isin=0;
+	while(token!=NULL)
+	{
+			
+			if(strcmp(token,argv[2])==0)
+			{
+
+				isin=1;
+				break;
+			}
+			token = strsep(&buffer, ",");
+	}
+	if (isin==0)
+	{
+		printf("ERROR:Malformed input.\n");
+		return -1;
+	}
+	if (argv[3] != '\0')
+	{
+		printf("ERROR:Extra argument received.\n");
+		return -1;
+	}
+	
+	char* col = argv[2]; //category/column that needs to be sorted
+	int category = checkColumn(col);
+	
+	//char buffer[1000];
 	
 	struct movie* array = malloc(sizeof(struct movie) * size);
 	
