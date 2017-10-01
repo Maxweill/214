@@ -16,8 +16,6 @@
 
 
 int main(int argc, char **argv) {
-	
-	//char buffer[1000];
 	char *buffer = malloc(1000);
 	char *hold = buffer;
 	int size = 128;
@@ -25,13 +23,48 @@ int main(int argc, char **argv) {
 	
 	fgets(buffer, 1000, stdin);
 	
-	struct movie* array = malloc(sizeof(struct movie) * size);
+	//char buffer[1000];
+	if (argv[1][0] != '-' || argv[1][1] != 'c')
+	{
+		printf("ERROR:Expected '-c' as first argument.\n");
+		return -1;
+	}
+	if (argv[2] == '\0')
+	{
+		printf("ERROR:Invalid input, one or more arguments are null.\n");
+		return -1;
+	}
+	char *token;
+	token = strsep(&buffer, ",");
+	int isin=0;
+	while(token!=NULL)
+	{
+			if(strcmp(token,argv[2])==0)
+			{
+				printf("We got a match!\n");
+				isin=1;
+			}
+			token = strsep(&buffer, ",");
+	}
+	if (isin==0)
+	{
+		printf("ERROR:Malformed input.\n");
+		return -1;
+	}
+	if (argv[3] != '\0')
+	{
+		printf("ERROR:Extra argument received.\n");
+		return -1;
+	}
 	
+	
+	struct movie* array = malloc(sizeof(struct movie) * size);
+	buffer = hold;
 	while(fgets(buffer, 1000, stdin)){
 		
 		//Array size increaser
 		if (i == size-1){
-			printf("Wow, you entered a lot of stuff, we have to make our array bigger!\n");
+			//printf("Wow, you entered a lot of stuff, we have to make our array bigger!\n");
 			size = size*2;
 			array = realloc(array,sizeof(struct movie) * size);
 		}
@@ -242,6 +275,7 @@ int main(int argc, char **argv) {
 		}
 	
 		// Checks / Print Statements
+		/*
 		printf("------ Movie No: %i ------\n", i);
 		printf("%s\n", array[i].color);
 		printf("%s\n", array[i].director_name);
@@ -271,16 +305,31 @@ int main(int argc, char **argv) {
 		printf("%f\n", array[i].imdb_score_num);
 		printf("%f\n", array[i].aspect_ratio);
 		printf("%i\n", array[i].movie_facebook_likes);
-
+		*/
 		//array[i] = *a;
 		
 		i++;
 		buffer = hold;
 	}
+		printf("Ready to mergesort by: %s\n",argv[2]);
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	int index;
-	
 	for(index = 0; index <= i; index++){
 		free(array[index].color);
 		free(array[index].director_name);
