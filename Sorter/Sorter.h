@@ -8,7 +8,7 @@
 
 #ifndef _Sorter_h
 #define _Sorter_h
-#endif
+
 
 //Suggestion: define a struct that mirrors a record (row) of the data set
 
@@ -49,12 +49,11 @@ void trim(char* str);
 
 void printCSV(struct movie* arr, int m, int n);
 
-struct movie* mergesort(struct movie* records, int colnum, int size);
-
-void NUMmergeSorter(struct movie* arr, int l, int r , int colnum );
-
-
 int checkColumn(char* col);
 
 //Suggestion: prototype a mergesort function
 
+struct movie* mergesort(struct movie* records, int colnum, int size);
+
+void NUMmergeSorter(struct movie* arr, int l, int r , int colnum );
+#endif
