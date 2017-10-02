@@ -17,49 +17,47 @@
 
 int main(int argc, char **argv) {
 	
-	char *buffer = malloc(1000);
-	char *hold = buffer;
+	char* buffer = malloc(1000);
+	char* hold = buffer;
 	int size = 128;
 	int i = 0;
 	
 	fgets(buffer, 1000, stdin);
 	
-	if (argv[1][0] != '-' || argv[1][1] != 'c')
-	{
-		printf("ERROR:Expected '-c' as first argument.\n");
-		return -1;
-	}
-	if (argv[2] == '\0')
-	{
-		printf("ERROR:Invalid input, one or more arguments are null.\n");
-		return -1;
-	}
-	char *token = strsep(&buffer, ",");
-	int isin=0;
-	while(token!=NULL)
-	{
-			
-			if(strcmp(token,argv[2])==0)
-			{
-
-				isin=1;
-				break;
-			}
-			token = strsep(&buffer, ",");
-	}
-	if (isin==0)
-	{
-		printf("ERROR:Malformed input.\n");
-		return -1;
-	}
-	if (argv[3] != '\0')
-	{
-		printf("ERROR:Extra argument received.\n");
+	if (argv[1][0] != '-' || argv[1][1] != 'c'){ //argument 1
+		printf("ERROR: Expected '-c' as first argument.\n");
 		return -1;
 	}
 	
-	char* col = argv[2]; //category/column that needs to be sorted
-	int category = checkColumn(col);
+	if (argv[2] == '\0'){ // argument 2
+		printf("ERROR: Invalid input, one or more arguments are null.\n");
+		return -1;
+	}
+	
+	char *token = strsep(&buffer, ",");
+	int isin = 0;
+	
+	while(token != NULL){
+		
+		if(strcmp(token, argv[2]) == 0){
+			isin = 1;
+			break;
+		}
+		
+		token = strsep(&buffer, ",");
+	}
+	
+	if(isin == 0){ //argument does not match column category
+		printf("ERROR: Malformed input.\n");
+		return -1;
+	}
+	
+	if(argv[3] != '\0'){ //extra argument
+		printf("ERROR: Extra argument received.\n");
+		return -1;
+	}
+	
+	char* category = argv[2]; //category/column that needs to be sorted
 	
 	struct movie* array = malloc(sizeof(struct movie) * size);
 	
@@ -68,18 +66,17 @@ int main(int argc, char **argv) {
 		//Array size increaser
 		if (i == size-1){
 			//printf("Wow, you entered a lot of stuff, we have to make our array bigger!\n");
-			size = size*2;
+			size = size * 2;
 			array = realloc(array,sizeof(struct movie) * size);
 		}
 		
-		//printf("Movie No: %i\n",i);
 		char* token;
 		//struct movie *a = malloc(sizeof(movie));
 		//array[i] = *a;
 		
 		// 1) STRING - Color 
 		token = strsep(&buffer, ",");
-		trim(token);
+		trim(token); //remove trailing and leading spaces
 		array[i].color = malloc(strlen(token) + 1);
 		strcpy(array[i].color, token);
 
@@ -153,15 +150,15 @@ int main(int argc, char **argv) {
 		
 		// 12) STRING - Movie title
 		if(buffer[0]=='\"'){
-			buffer = buffer+1;
+			buffer = buffer + 1;
 			token = strsep(&buffer, "\"");
-			trim(token);
+			trim(token); //remove trailing and leading spaces
 			array[i].movie_title = malloc(strlen(token));
 			strcpy(array[i].movie_title, token);
 			strsep(&buffer, ",");	
 		} else {
 			token = strsep(&buffer, ",");
-			trim(token);
+			trim(token); //remove trailing and leading spaces
 			array[i].movie_title = malloc(strlen(token) + 1);
 			strcpy(array[i].movie_title, token);
 		}
@@ -316,15 +313,14 @@ int main(int argc, char **argv) {
 		buffer = hold;
 	}
 	
-	// Printing to CSV
 	int m = i;
 	int n = 27;
 	
-	mergesort(array, category, i);
+	mergesort(array, category, 0, (m - 1)); //MERGE SORT
 	
-	printCSV(array, m, n);
+	printCSV(array, m, n); //PRINT OUTPUT/SORTED ARRAY
 	
-	// Free
+	// Free malloc'd fields/variables
 	int index;
 	
 	for(index = 0; index <= i; index++){
@@ -342,12 +338,12 @@ int main(int argc, char **argv) {
 		free(array[index].content_rating);
 	}
 	
-	
 	free(array);
 	free(buffer);
 	
 	return 0;
-}
+	
+} //end of 'main' function
 
 void trim(char* token) {
 	
@@ -376,16 +372,15 @@ void trim(char* token) {
 		
 	}
 	
-}
+} //end of 'trim' function
 
-void printCSV(struct movie* array, int m, int n){
+void printCSV(struct movie* array, int m, int n) {
 	
 	FILE *fp;
 	int i;
-	char temp[] = "sortedmovies";
-	char* filename = temp;
-	
-	filename = strcat(temp, ".csv");
+	char name[] = "sortedmovies";
+	char* filename = name;
+	filename = strcat(name, ".csv");
 	fp = fopen(filename, "w+");
 	
 	// Print column titles
@@ -395,12 +390,12 @@ void printCSV(struct movie* array, int m, int n){
 	// Print each struct (each movie is 1 row with 28 columns)
 	for(i = 0; i < m; i++){
 		
-		if(strchr(array[i].movie_title, ',')){
+		if(strchr(array[i].movie_title, ',') || strchr(array[i].movie_title, ';')){
 			fprintf(fp, "%s,%s,%i,%i,%i,%i,%s,%i,%i,%s,%s,\"%s\",%i,%i,%s,%i,%s,%s,%i,%s,%s,%s,%i,%i,%i,%f,%f,%i\n", array[i].color,array[i].director_name,array[i].num_critic_for_reviews,array[i].duration,array[i].director_facebook_likes,array[i].actor_3_facebook_likes,array[i].actor_2_name,array[i].actor_1_facebook_likes,array[i].gross,array[i].genres,array[i].actor_1_name,array[i].movie_title,array[i].num_voted_users,array[i].cast_total_facebook_likes,array[i].actor_3_name,array[i].facenumber_in_poster,array[i].plot_keywords,array[i].movie_imdb_link,array[i].num_user_for_reviews,array[i].language,array[i].country,array[i].content_rating,array[i].budget,array[i].title_year,array[i].actor_2_facebook_likes,array[i].imdb_score_num,array[i].aspect_ratio,array[i].movie_facebook_likes);	
-			fprintf(stdout, "%s,%s,%i,%i,%i,%i,%s,%i,%i,%s,%s,\"%s\",%i,%i,%s,%i,%s,%s,%i,%s,%s,%s,%i,%i,%i,%f,%f,%i\n", array[i].color,array[i].director_name,array[i].num_critic_for_reviews,array[i].duration,array[i].director_facebook_likes,array[i].actor_3_facebook_likes,array[i].actor_2_name,array[i].actor_1_facebook_likes,array[i].gross,array[i].genres,array[i].actor_1_name,array[i].movie_title,array[i].num_voted_users,array[i].cast_total_facebook_likes,array[i].actor_3_name,array[i].facenumber_in_poster,array[i].plot_keywords,array[i].movie_imdb_link,array[i].num_user_for_reviews,array[i].language,array[i].country,array[i].content_rating,array[i].budget,array[i].title_year,array[i].actor_2_facebook_likes,array[i].imdb_score_num,array[i].aspect_ratio,array[i].movie_facebook_likes);
+			fprintf(stdout, "%s,%s,%i,%i,%i,%i,%s,%i,%i,%s,%s,\"%s\",%i,%i,%s,%i,%s,%s,%i,%s,%s,%s,%i,%i,%i,%f,%f,%i\n", array[i].color,array[i].director_name,array[i].num_critic_for_reviews,array[i].duration,array[i].director_facebook_likes,array[i].actor_3_facebook_likes,array[i].actor_2_name,array[i].actor_1_facebook_likes,array[i].gross,array[i].genres,array[i].actor_1_name,array[i].movie_title,array[i].num_voted_users,array[i].cast_total_facebook_likes,array[i].actor_3_name,array[i].facenumber_in_poster,array[i].plot_keywords,array[i].movie_imdb_link,array[i].num_user_for_reviews,array[i].language,array[i].country,array[i].content_rating,array[i].budget,array[i].title_year,array[i].actor_2_facebook_likes,array[i].imdb_score_num,array[i].aspect_ratio,array[i].movie_facebook_likes);		
 		} else {
 			fprintf(fp, "%s,%s,%i,%i,%i,%i,%s,%i,%i,%s,%s,%s,%i,%i,%s,%i,%s,%s,%i,%s,%s,%s,%i,%i,%i,%f,%f,%i\n", array[i].color,array[i].director_name,array[i].num_critic_for_reviews,array[i].duration,array[i].director_facebook_likes,array[i].actor_3_facebook_likes,array[i].actor_2_name,array[i].actor_1_facebook_likes,array[i].gross,array[i].genres,array[i].actor_1_name,array[i].movie_title,array[i].num_voted_users,array[i].cast_total_facebook_likes,array[i].actor_3_name,array[i].facenumber_in_poster,array[i].plot_keywords,array[i].movie_imdb_link,array[i].num_user_for_reviews,array[i].language,array[i].country,array[i].content_rating,array[i].budget,array[i].title_year,array[i].actor_2_facebook_likes,array[i].imdb_score_num,array[i].aspect_ratio,array[i].movie_facebook_likes);
-			fprintf(stdout, "%s,%s,%i,%i,%i,%i,%s,%i,%i,%s,%s,\"%s\",%i,%i,%s,%i,%s,%s,%i,%s,%s,%s,%i,%i,%i,%f,%f,%i\n", array[i].color,array[i].director_name,array[i].num_critic_for_reviews,array[i].duration,array[i].director_facebook_likes,array[i].actor_3_facebook_likes,array[i].actor_2_name,array[i].actor_1_facebook_likes,array[i].gross,array[i].genres,array[i].actor_1_name,array[i].movie_title,array[i].num_voted_users,array[i].cast_total_facebook_likes,array[i].actor_3_name,array[i].facenumber_in_poster,array[i].plot_keywords,array[i].movie_imdb_link,array[i].num_user_for_reviews,array[i].language,array[i].country,array[i].content_rating,array[i].budget,array[i].title_year,array[i].actor_2_facebook_likes,array[i].imdb_score_num,array[i].aspect_ratio,array[i].movie_facebook_likes);
+			fprintf(stdout, "%s,%s,%i,%i,%i,%i,%s,%i,%i,%s,%s,%s,%i,%i,%s,%i,%s,%s,%i,%s,%s,%s,%i,%i,%i,%f,%f,%i\n", array[i].color,array[i].director_name,array[i].num_critic_for_reviews,array[i].duration,array[i].director_facebook_likes,array[i].actor_3_facebook_likes,array[i].actor_2_name,array[i].actor_1_facebook_likes,array[i].gross,array[i].genres,array[i].actor_1_name,array[i].movie_title,array[i].num_voted_users,array[i].cast_total_facebook_likes,array[i].actor_3_name,array[i].facenumber_in_poster,array[i].plot_keywords,array[i].movie_imdb_link,array[i].num_user_for_reviews,array[i].language,array[i].country,array[i].content_rating,array[i].budget,array[i].title_year,array[i].actor_2_facebook_likes,array[i].imdb_score_num,array[i].aspect_ratio,array[i].movie_facebook_likes);
 		}
 		
 		
@@ -444,71 +439,4 @@ void printCSV(struct movie* array, int m, int n){
 	}
 	*/
 	
-	
-}
-
-int checkColumn(char* col){
-	
-	int colnum;
-	
-	if(strcmp(col,"color") == 0){
-        colnum = 0;
-    } else if(strcmp(col,"director_name")==0){
-        colnum = 1;
-    }else if(strcmp(col,"num_critic_for_reviews")==0){
-        colnum = 2;
-    }else if(strcmp(col,"duration")==0){
-        colnum = 3;
-    }else if(strcmp(col,"director_facebook_likes")==0){
-        colnum = 4;
-    }else if(strcmp(col,"actor_3_facebook_likes")==0){
-        colnum = 5;
-    }else if(strcmp(col,"actor_2_name")==0){
-        colnum = 6;
-    }else if(strcmp(col,"actor_1_facebook_likes")==0){
-        colnum = 7;
-    }else if(strcmp(col,"gross")==0){
-        colnum = 8;
-    }else if(strcmp(col,"genres")==0){
-        colnum = 9;
-    }else if(strcmp(col,"actor_1_name")==0){
-        colnum = 10;
-    }else if(strcmp(col,"movie_title")==0){
-        colnum = 11;
-    }else if(strcmp(col,"num_voted_users")==0){
-        colnum = 12;
-    }else if(strcmp(col,"cast_total_facebook_likes")==0){
-        colnum = 13;
-    }else if(strcmp(col,"actor_3_name")==0){
-        colnum = 14;
-    }else if(strcmp(col,"facenumber_in_poster")==0){
-        colnum = 15;
-    }else if(strcmp(col,"plot_keywords")==0){
-        colnum = 16;
-    }else if(strcmp(col,"movie_imdb_link")==0){
-        colnum = 17;
-    }else if(strcmp(col,"num_user_for_reviews")==0){
-        colnum = 18;
-    }else if(strcmp(col,"language")==0){
-        colnum = 19;
-    }else if(strcmp(col,"country")==0){
-        colnum = 20;
-    }else if(strcmp(col,"content_rating")==0){
-        colnum = 21;
-    }else if(strcmp(col,"budget")==0){
-        colnum = 22;
-    }else if(strcmp(col,"title_year")==0){
-        colnum = 23;
-    }else if(strcmp(col,"actor_2_facebook_likes")==0){
-        colnum = 24;
-    }else if(strcmp(col,"imdb_score")==0){
-        colnum = 25;
-    }else if(strcmp(col,"aspect_ratio")==0){
-        colnum = 26;
-    }else if(strcmp(col,"movie_facebook_likes")==0){
-        colnum = 27;
-    }
-    
-    return colnum;
-	
-}
+} //end of 'printCSV' function
