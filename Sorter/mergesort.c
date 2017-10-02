@@ -146,11 +146,11 @@ void mergesortHelper(struct movie* arr, char* category, int left, int right, int
 
 int compareStrings(char* str1, char* str2) {
 	
-    if(strcmp(str1, str2) >= 0){
-        return 1;  
-    } else {
-        return 2;
-    }
+	if(strcasecmp(str1, str2) > 0){		
+		return 1;  
+	} else {
+		return 2;
+	}
     
     return 1;
     
