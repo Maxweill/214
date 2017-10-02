@@ -1,23 +1,9 @@
 /*
  * mergesort.c
  * 
- * Copyright 2017 Maxwell Mucha <mem434@null.cs.rutgers.edu>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301, USA.
- * 
+ * Authors: 
+ * Ronak Gandhi
+ * Maxwell Mucha
  * 
  */
 
@@ -28,443 +14,144 @@
 #include "Sorter.h"
 #include <stdio.h>
 
-int firstString(char * s1, char * s2){ //compares to strings alphabetically and returns the alphabetically first string
-    if(strcmp(s1,s2)>0){    //this means s1 is alphabetically first
-        return 0;  
-    }else{          //this means that s2 was alphabetically first;
-        return 1;
-    }
-}
- 
-void NUMmerge(struct movie* arr, int l, int m, int r, int colnum) {
+void mergesort(struct movie* arr, char* category, int left, int right) {
 	
-	int i, j, k;
-	int n1 = m - l + 1;     //size of left array
-	int n2 =  r - m;    //size of right array
+	if (left < right){
+		int middle = left + ((right - left) / 2);
+		
+		mergesort(arr, category, left, middle);
+		mergesort(arr, category, (middle + 1), right);
+		
+		mergesortHelper(arr, category, left, right, middle);
+	}
 	
-	struct movie * tempL = malloc(sizeof(struct movie)*n1);
-	struct movie * tempR = malloc(sizeof(struct movie)*n2);
+} //end of 'mergesort' function
  
-        for (i = 0; i < n1; i++){   //copy data to temp arrays
-            tempL[i] = arr[l + i];
-    }
-        for (j = 0; j < n2; j++){
-            tempR[j] = arr[m + 1 + j];
-    }
-   
-        /* merge back into temp array*/
-        i = 0; // first index of first subarray
-        j = 0; // first index of second subarray
-        k = l; // first index of merged subarray
- 
-    switch(colnum){
-        case(0):
-            //CHAR
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                int result = firstString(tempL[i].color,tempR[j].color);
-                    if (result == 1){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(1):
-            //CHAR
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                int result = firstString(tempL[i].director_name,tempR[j].director_name);
-                    if (result == 1){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(2): //INT
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                    if (tempL[i].num_critic_for_reviews <= tempR[j].num_critic_for_reviews){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(3)://INT
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                    if (tempL[i].duration <= tempR[j].duration){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(4): //INT
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                    if (tempL[i].director_facebook_likes <= tempR[j].director_facebook_likes){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(5): //INT
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                    if (tempL[i].actor_3_facebook_likes <= tempR[j].actor_3_facebook_likes){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(6):
-            //CHAR
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                int result = firstString(tempL[i].actor_2_name,tempR[j].actor_2_name);
-                    if (result == 1){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(7): //INT
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                    if (tempL[i].actor_1_facebook_likes <= tempR[j].actor_1_facebook_likes){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(8): //FLOAT/DOUBLE
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                    if (tempL[i].gross <= tempR[j].gross){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(9):
-            //CHAR
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                int result = firstString(tempL[i].genres,tempR[j].genres);
-                    if (result == 1){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(10):
-            //CHAR
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                int result = firstString(tempL[i].actor_1_name,tempR[j].actor_1_name);
-                    if (result == 1){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(11): //CHAR
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                int result = firstString(tempL[i].movie_title,tempR[j].movie_title);
-                    if (result == 1){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(12): //INT
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                    if (tempL[i].num_voted_users <= tempR[j].num_voted_users){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;     
-        case(13): //INT
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                    if (tempL[i].cast_total_facebook_likes <= tempR[j].cast_total_facebook_likes){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(14):
-            //CHAR
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                int result = firstString(tempL[i].actor_3_name,tempR[j].actor_3_name);
-                    if (result == 1){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break; 
-        case(15): //INT
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                    if (tempL[i].facenumber_in_poster <= tempR[j].facenumber_in_poster){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(16):
-            //CHAR
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                int result = firstString(tempL[i].plot_keywords,tempR[j].plot_keywords);
-                    if (result == 1){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break; 
-        case(17):
-            //CHAR
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                int result = firstString(tempL[i].movie_imdb_link,tempR[j].movie_imdb_link);
-                    if (result == 1){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;     
-        case(18): //INT
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                    if (tempL[i].num_user_for_reviews <= tempR[j].num_user_for_reviews){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break; 
-        case(19):
-            //CHAR
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                int result = firstString(tempL[i].language,tempR[j].language);
-                    if (result == 1){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;     
-        case(20):
-            //CHAR
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                int result = firstString(tempL[i].country,tempR[j].country);
-                    if (result == 1){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(21):
-            //CHAR
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                int result = firstString(tempL[i].content_rating,tempR[j].content_rating);
-                    if (result == 1){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(22): //FLOAT/DOUBLE
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                    if (tempL[i].budget <= tempR[j].budget){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(23): //INT
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                    if (tempL[i].title_year <= tempR[j].title_year){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(24): //INT
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                    if (tempL[i].actor_2_facebook_likes <= tempR[j].actor_2_facebook_likes){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(25): //FLOAT/DOUBLE
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                    if (tempL[i].imdb_score_num <= tempR[j].imdb_score_num){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(26): //FLOAT/DOUBLE
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                    if (tempL[i].aspect_ratio <= tempR[j].aspect_ratio){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-        case(27): //INT
-            while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-                    if (tempL[i].movie_facebook_likes <= tempR[j].movie_facebook_likes){
-                            arr[k] = tempL[i]; 
-                            i++;
-                    }else{
-                            arr[k] = tempR[j];
-                            j++;
-                    }
-                    k++;
-                }
-            break;
-    }
- 
-    /*
-    //original white loop just here in case errors
-        while (i < n1 && j < n2){ //sees if i or j is larger and puts the smallest one into temp
-            if (tempL[i].movieFBlikes <= tempR[j].movieFBlikes){
-                    arr[k] = tempL[i]; 
-                    i++;
-            }else{
-                    arr[k] = tempR[j];
-                    j++;
-            }
-            k++;
-        }
-    */
- 
-        //copy remaining elements of tempL[], if there are any
-        while (i < n1){
-            arr[k] = tempL[i];
-            i++;
-            k++;
-        }
-    //same thing but with tempR[]
-        while (j < n2){
-            arr[k] = tempR[j];
-            j++;
-            k++;
-        }
+void mergesortHelper(struct movie* arr, char* category, int left, int right, int middle) {
+	
+	int k = left;
+	
+	// Left Sub-Array
+	int i;
+	int sizeL = (middle - left + 1); //size of left array
+	struct movie *arrLeft = malloc(sizeof(struct movie) * sizeL);
+	for (i = 0; i < sizeL; i++){ //copy data to temp arrays
+		arrLeft[i] = arr[i + left];
+	}
+	i = 0;
+	
+	// Right Sub-Array
+	int j;
+	int sizeR =  (right - middle); //size of right array
+	struct movie *arrRight = malloc(sizeof(struct movie) * sizeR);
+	for (j = 0; j < sizeR; j++){
+		arrRight[j] = arr[j + middle + 1];
+	}
+	j = 0;
+	
+	int strVal;
+	int valueL;
+	int valueR;
+	double dvalueL;
+	double dvalueR;
+		
+	while (i < sizeL && j < sizeR){
+		if(strcmp(category, "color") == 0){ strVal = compareStrings(arrLeft[i].color, arrRight[j].color); }
+		else if(strcmp(category, "director_name") == 0){ strVal = compareStrings(arrLeft[i].director_name, arrRight[j].director_name); }
+		else if(strcmp(category, "num_critic_for_reviews") == 0){ valueL = arrLeft[i].num_critic_for_reviews; valueR = arrRight[j].num_critic_for_reviews; }
+		else if(strcmp(category, "duration") == 0){ valueL = arrLeft[i].duration; valueR = arrRight[j].duration; }
+		else if(strcmp(category, "director_facebook_likes") == 0){ valueL = arrLeft[i].director_facebook_likes; valueR = arrRight[j].director_facebook_likes; }
+		else if(strcmp(category, "actor_3_facebook_likes") == 0){ valueL = arrLeft[i].actor_3_facebook_likes; valueR = arrRight[j].actor_3_facebook_likes; }
+		else if(strcmp(category, "actor_2_name") == 0){ strVal = compareStrings(arrLeft[i].actor_2_name, arrRight[j].actor_2_name); }
+		else if(strcmp(category, "actor_1_facebook_likes") == 0){ valueL = arrLeft[i].actor_1_facebook_likes; valueR = arrRight[j].actor_1_facebook_likes; }
+		else if(strcmp(category, "gross") == 0){ valueL = arrLeft[i].gross; valueR = arrRight[j].gross; }
+		else if(strcmp(category, "genres") == 0){ strVal = compareStrings(arrLeft[i].genres, arrRight[j].genres); }
+		else if(strcmp(category, "actor_1_name") == 0){ strVal = compareStrings(arrLeft[i].actor_1_name, arrRight[j].actor_1_name); }
+		else if(strcmp(category, "movie_title") == 0){ strVal = compareStrings(arrLeft[i].movie_title, arrRight[j].movie_title); }
+		else if(strcmp(category, "num_voted_users") == 0){ valueL = arrLeft[i].num_voted_users; valueR = arrRight[j].num_voted_users; }
+		else if(strcmp(category, "cast_total_facebook_likes") == 0){ valueL = arrLeft[i].cast_total_facebook_likes; valueR = arrRight[j].cast_total_facebook_likes; }
+		else if(strcmp(category, "actor_3_name") == 0){ strVal = compareStrings(arrLeft[i].actor_3_name, arrRight[j].actor_3_name); }
+		else if(strcmp(category, "facenumber_in_poster") == 0){ valueL = arrLeft[i].facenumber_in_poster; valueR = arrRight[j].facenumber_in_poster; }
+		else if(strcmp(category, "plot_keywords") == 0){ strVal = compareStrings(arrLeft[i].plot_keywords, arrRight[j].plot_keywords); }
+		else if(strcmp(category, "movie_imdb_link") == 0){ strVal = compareStrings(arrLeft[i].movie_imdb_link, arrRight[j].movie_imdb_link); }
+		else if(strcmp(category, "num_user_for_reviews") == 0){ valueL = arrLeft[i].num_user_for_reviews; valueR = arrRight[j].num_user_for_reviews; }
+		else if(strcmp(category, "language") == 0){ strVal = compareStrings(arrLeft[i].language, arrRight[j].language); }
+		else if(strcmp(category, "country") == 0){ strVal = compareStrings(arrLeft[i].country, arrRight[j].country); }
+		else if(strcmp(category, "content_rating") == 0){ strVal = compareStrings(arrLeft[i].content_rating, arrRight[j].content_rating); }
+		else if(strcmp(category, "budget") == 0){ valueL = arrLeft[i].budget; valueR = arrRight[j].budget; }
+		else if(strcmp(category, "title_year") == 0){ valueL = arrLeft[i].title_year; valueR = arrRight[j].title_year; }
+		else if(strcmp(category, "actor_2_facebook_likes") == 0){ valueL = arrLeft[i].actor_2_facebook_likes; valueR = arrRight[j].actor_2_facebook_likes; }
+		else if(strcmp(category, "imdb_score") == 0){ dvalueL = arrLeft[i].imdb_score_num; dvalueR = arrRight[j].imdb_score_num; }
+		else if(strcmp(category, "aspect_ratio") == 0){ dvalueL = arrLeft[i].aspect_ratio; dvalueR = arrRight[j].aspect_ratio; }
+		else if(strcmp(category, "movie_facebook_likes") == 0){ valueL = arrLeft[i].movie_facebook_likes; valueR = arrRight[j].movie_facebook_likes; }
+			
+		// Strings
+		if(strcmp(category, "color") == 0 || strcmp(category, "director_name") == 0 || strcmp(category, "actor_2_name") == 0 || strcmp(category, "genres") == 0 || strcmp(category, "actor_1_name") == 0 || strcmp(category, "movie_title") == 0 || strcmp(category, "actor_3_name") == 0 || strcmp(category, "plot_keywords") == 0 || strcmp(category, "movie_imdb_link") == 0 || strcmp(category, "language") == 0 || strcmp(category, "country") == 0 || strcmp(category, "content_rating") == 0){
+			if(strVal == 2){
+				arr[k] = arrLeft[i]; 
+				i++;
+			} else {
+				arr[k] = arrRight[j];
+				j++;
+			}
+			k++;
+		}
+			
+		// Ints
+		if(strcmp(category, "num_critic_for_reviews") == 0 || strcmp(category, "duration") == 0 || strcmp(category, "director_facebook_likes") == 0 || strcmp(category, "actor_3_facebook_likes") == 0 || strcmp(category, "actor_1_facebook_likes") == 0 || strcmp(category, "gross") == 0 || strcmp(category, "num_voted_users") == 0 || strcmp(category, "cast_total_facebook_likes") == 0 || strcmp(category, "facenumber_in_poster") == 0 || strcmp(category, "num_user_for_reviews") == 0 || strcmp(category, "budget") == 0 || strcmp(category, "title_year") == 0 || strcmp(category, "actor_2_facebook_likes") == 0 || strcmp(category, "movie_facebook_likes") == 0){
+			if(valueL <= valueR){
+				arr[k] = arrLeft[i]; 
+				i++;
+			} else {
+				arr[k] = arrRight[j];
+				j++;
+			}
+			k++;
+		}
+		
+		// Doubles
+		if(strcmp(category, "imdb_score") == 0 || strcmp(category, "aspect_ratio") == 0){
+			if(dvalueL <= dvalueR){
+				arr[k] = arrLeft[i]; 
+				i++;
+			} else {
+				arr[k] = arrRight[j];
+				j++;
+			}
+			k++;
+		}
+		
+		
+	}
+	
+	// Left Array - copy leftover elements
+	while (i < sizeL){
+		arr[k] = arrLeft[i];
+		i++;
+		k++;
+	}
+	
+	// Right Array - copy leftover elements
+	while (j < sizeR){
+		arr[k] = arrRight[j];
+		j++;
+		k++;
+	}
+	
+	// Free left and right sub-arrays
+	free(arrLeft);
+	free(arrRight);
         
-        free(tempL);
-        free(tempR);
-}
- 
-void NUMmergeSorter(struct movie* arr, int l, int r , int colnum ){
-	
-        if (l < r){
-            int m = l+(r-l)/2; //round down if m is a decimal (i.e 4.5 -> 4)
-            // sort first and second halves
-            NUMmergeSorter(arr, l, m,colnum);       //split the left sub arrays
-            NUMmergeSorter(arr, m+1, r,colnum);     //split the right sub arrays
-            NUMmerge(arr, l, m, r, colnum);         //compares two sub-arrays and sorts them in arr
-        }
-}
+} //end of 'mergesortHelper' function
 
-struct movie* mergesort(struct movie* records, int colnum, int size){ //splits array into arrays of one
+int compareStrings(char* str1, char* str2) {
 	
-	NUMmergeSorter(records, 0, size-1 ,colnum);
-	
-    return records;
-}
-
+    if(strcmp(str1, str2) >= 0){
+        return 1;  
+    } else {
+        return 2;
+    }
+    
+    return 1;
+    
+} //end of 'compareStrings' function
