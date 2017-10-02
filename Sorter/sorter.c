@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 	int i = 0;
 	
 	fgets(buffer, 1000, stdin);
-	
+
 	if (argv[1][0] != '-' || argv[1][1] != 'c'){ //argument 1
 		printf("ERROR: Expected '-c' as first argument.\n");
 		return -1;
@@ -38,12 +38,12 @@ int main(int argc, char **argv) {
 	int isin = 0;
 	
 	while(token != NULL){
-		
-		if(strcmp(token, argv[2]) == 0){
+		//printf("%s\n",token);
+		if(strcmp(token, argv[2]) == 0 || strcmp(argv[2], "movie_facebook_likes")==0){	
+			printf("%s\n",token);
 			isin = 1;
 			break;
 		}
-		
 		token = strsep(&buffer, ",");
 	}
 	
@@ -403,40 +403,40 @@ void printCSV(struct movie* array, int m, int n) {
 	
 	//fclose(fp);
 	
-	/*
-	for(i = 0; i < m; i++){
+	
+	//for(i = 0; i < m; i++){
 		
 		// Checks / Print Statements
-		printf("------ Movie No: %i (i = %i) ------\n", i+1, i);
-		printf("%s\n", array[i].director_name);
-		printf("%i\n", array[i].num_critic_for_reviews);
-		printf("%i\n", array[i].duration);
-		printf("%i\n", array[i].director_facebook_likes);
-		printf("%i\n", array[i].actor_3_facebook_likes);
-		printf("%s\n", array[i].actor_2_name);
-		printf("%i\n", array[i].actor_1_facebook_likes);
-		printf("%i\n", array[i].gross);
-		printf("%s\n", array[i].genres);
-		printf("%s\n", array[i].actor_1_name);
-		printf("%s\n", array[i].movie_title);
-		printf("%i\n", array[i].num_voted_users);
-		printf("%i\n", array[i].cast_total_facebook_likes);
-		printf("%s\n", array[i].actor_3_name);
-		printf("%i\n", array[i].facenumber_in_poster);
-		printf("%s\n", array[i].plot_keywords);
-		printf("%s\n", array[i].movie_imdb_link);
-		printf("%i\n", array[i].num_user_for_reviews);
-		printf("%s\n", array[i].language);
-		printf("%s\n", array[i].country);
-		printf("%s\n", array[i].content_rating);
-		printf("%i\n", array[i].budget);
-		printf("%i\n", array[i].title_year);
-		printf("%i\n", array[i].actor_2_facebook_likes);
-		printf("%f\n", array[i].imdb_score_num);
-		printf("%f\n", array[i].aspect_ratio);
-		printf("%i\n", array[i].movie_facebook_likes);
+		//printf("------ Movie No: %i (i = %i) ------\n", i+1, i);
+		//printf("%s\n", array[i].director_name);
+		//printf("%i\n", array[i].num_critic_for_reviews);
+		//printf("%i\n", array[i].duration);
+		//printf("%i\n", array[i].director_facebook_likes);
+		//printf("%i\n", array[i].actor_3_facebook_likes);
+		//printf("%s\n", array[i].actor_2_name);
+		//printf("%i\n", array[i].actor_1_facebook_likes);
+		//printf("%i\n", array[i].gross);
+		//printf("%s\n", array[i].genres);
+		//printf("%s\n", array[i].actor_1_name);
+		//printf("%s\n", array[i].movie_title);
+		//printf("%i\n", array[i].num_voted_users);
+		//printf("%i\n", array[i].cast_total_facebook_likes);
+		//printf("%s\n", array[i].actor_3_name);
+		//printf("%i\n", array[i].facenumber_in_poster);
+		//printf("%s\n", array[i].plot_keywords);
+		//printf("%s\n", array[i].movie_imdb_link);
+		//printf("%i\n", array[i].num_user_for_reviews);
+		//printf("%s\n", array[i].language);
+		//printf("%s\n", array[i].country);
+		//printf("%s\n", array[i].content_rating);
+		//printf("%i\n", array[i].budget);
+		//printf("%i\n", array[i].title_year);
+		//printf("%i\n", array[i].actor_2_facebook_likes);
+		//printf("%f\n", array[i].imdb_score_num);
+		//printf("%f\n", array[i].aspect_ratio);
+		//printf("%i\n", array[i].movie_facebook_likes);
 		
-	}
-	*/
+	//}
+	
 	
 } //end of 'printCSV' function
