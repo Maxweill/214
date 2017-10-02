@@ -9,9 +9,9 @@
 #ifndef _Sorter_h
 #define _Sorter_h
 
-
 //Suggestion: define a struct that mirrors a record (row) of the data set
 
+/* Struct for each movie in CSV file. Each movie contains 28 fields that describe it according to IMDB. */
 typedef struct movie {
 	
 	char* color;
@@ -45,15 +45,22 @@ typedef struct movie {
 	
 } movie;
 
+
+/* Trims/removes leading and trailing spaces in a string */
 void trim(char* str);
 
+/* Loops through sorted struct array and prints the fields of each movie to both STDOUT (command line) and a CSV file named 'sortedmovies.csv' */
 void printCSV(struct movie* arr, int m, int n);
 
-int checkColumn(char* col);
+/* Determines middle value to split single array into two halves (calls 'mergesortHelper') */
+void mergesort(struct movie* arr, char* category, int left, int right);
+
+/* Creates and sorts sub-arrays and then merges them together to create a single sorted array */
+void mergesortHelper(struct movie* arr, char* category, int left, int right, int middle);
+
+/* Compares two strings to determine their order during the sort (lexicographical ordering) */
+int compareStrings(char* str1, char* str2);
 
 //Suggestion: prototype a mergesort function
 
-struct movie* mergesort(struct movie* records, int colnum, int size);
-
-void NUMmergeSorter(struct movie* arr, int l, int r , int colnum );
 #endif
