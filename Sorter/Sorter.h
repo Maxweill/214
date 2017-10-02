@@ -49,7 +49,8 @@ typedef struct movie {
 /* Trims/removes leading and trailing spaces in a string */
 void trim(char* str);
 
-/* Loops through sorted struct array and prints the fields of each movie to both STDOUT (command line) and a CSV file named 'sortedmovies.csv' */
+/* Loops through sorted struct array and prints the fields of each movie to STDOUT (command line) 
+ * (printing to a CSV file named 'sortedmovies.csv' is also available if needed, but needs to be uncommented in 'printCSV' function) */
 void printCSV(struct movie* arr, int m, int n);
 
 /* Determines middle value to split single array into two halves (calls 'mergesortHelper') */
