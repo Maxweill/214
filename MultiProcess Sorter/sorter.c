@@ -5,6 +5,15 @@
  * Ronak Gandhi
  * Maxwell Mucha
  * 
+ * TODO LIST:
+ * 1.) Works, but need to fix up reading input directory paths ("./sorter -c <category> -d <dir path>") [local and non-local]
+ * 2.) Get output directory working ("-o <output dir path>")
+ * 3.) Giving proper output of project:
+ * 			1.) Initial PID
+ * 			2.) PIDS of all child processes: AAA,BBB,CCC,DDD,EEE,FFF, etc
+ * 			3.) Total number of processes: ZZZZZ
+ * 4.) Trying to figure out and fixing the few errors from our mergesort/sorter from Project 0 (use strcmp instead or try figuring out how to alphabetically sort)
+ * 
  */
 
 #include <stdlib.h>
@@ -19,36 +28,109 @@
 #include <sys/stat.h>
 
 int numchild;
-char*sortname;	//Name of the file being sorted
-char*sortpath;	//Path leading to the file being sorted
-char*fullname;
-char*category;
-int main(int argc, char **argv)
-{
+char *sortname;	//Name of the file being sorted
+char *sortpath;	//Path leading to the file being sorted
+char *fullname;
+char *category;
 
-	char path[4096];
-	// gets cwd, you'll need to change this so that it give you the correct starting directory with different inputs
-	if(getcwd(path,sizeof(path))!=NULL) 
-	{
-		//printf("%s\n",path);
-	}
-	else
-	{
-		printf("Error with getcwd");
+int main(int argc, char **argv) {
+	
+	// Argument 2 -> category (e.g. "movie_title")
+	if (argv[2] == '\0' || argv[2] == NULL){
+		printf("ERROR: Invalid input, one or more arguments are null.\n");
 		return -1;
 	}
-	numchild=0; 	// Number of children a process spawns
-	sortpath=path;
-	//Directory and directory structure
+	
+	char *input_dir; 
+	char *output_dir;
+
 	DIR *dir;
+	char path[4096];
+	
+	// Case 1 - "./sorter -c movie_title"
+	if(argc == 3){
+		
+		// Argument 1 -> "-c"
+		if (strcmp(argv[1], "-c") != 0){
+			printf("ERROR: Expected '-c' as first argument.\n");
+			return -1;
+		}
+		
+		// gets cwd, you'll need to change this so that it give you the correct starting directory with different inputs
+		if(getcwd(path, sizeof(path)) != NULL){
+			//printf("%s\n",path);
+		} else {
+			printf("Error with getcwd");
+			return -1;
+		}
+		
+		sortpath = path;
+		dir = opendir(path);
+	
+	// Case 2 & 3 - "./sorter -c movie_title -d [full directory]" or "./sorter -c movie_title -d [local directory]"
+	// 				"./sorter -c movie_title -d [full directory]" -o [full directory]"
+	} else if(argc >= 5){
+		
+		// Argument 1 -> "-c"
+		if (strcmp(argv[1], "-c") != 0){
+			printf("ERROR: Expected '-c' as first argument.\n");
+			return -1;
+		}
+		
+		// Argument 3 -> "-d"
+		if (strcmp(argv[3],"-d") != 0 || argv[3] == NULL){
+			printf("ERROR: Expected '-d' as third argument.\n");
+			return -1;
+		}
+		
+		input_dir = argv[4];
+		
+		// remove slash at the end of directory
+		//if(input_dir[strlen(input_dir) - 1] == '/'){
+		//	input_dir[strlen(input_dir) - 1] = '\0';
+		//}
+		
+		//printf("check: %s\n", input_dir);
+
+		if(argc >= 6){
+			
+			// Argument 5 -> "-o"
+			if (strcmp(argv[5],"-o") != 0){
+				printf("ERROR: Expected '-o' as fifth argument.\n");
+			return -1;
+			}
+			
+			output_dir = argv[6];
+		} 
+		
+		sortpath = input_dir;
+		int p;
+		for(p = 0; p < strlen(input_dir); p++){ //copy input directory to path
+			path[p] = input_dir[p];
+		}
+		dir = opendir(path);
+		
+		//printf("directory: %s\n", path);
+
+	} else {
+		printf("error\n"); //other: arguments not valid -> will edit message later
+		return -1;
+	}
+	
+	int PID = getpid();
+	printf("Initial PID: %d\n", PID);
+	printf("PIDS of all child processes: ");
+	printf("\n"); //for now
+	
+	numchild = 0; 	// Number of children a process spawns
+	//Directory and directory structure
     struct dirent *str;
-    dir = opendir(path);
     
     
     if ( dir != NULL) // null check for directory
     {
 		str = readdir(dir); // reads the first thing in the directory
-		for(;str != NULL;str = readdir(dir)) //for loop that goes through everything in the loop.
+		for(;str != NULL; str = readdir(dir)) //for loop that goes through everything in the loop.
 		{
 			if((strcmp(str->d_name,"..") != 0) && (strcmp(str->d_name,".") != 0)) //checks for .  and .. directories
 			{
@@ -117,17 +199,26 @@ int main(int argc, char **argv)
 	fullname = malloc(4096); //for some reason sortpath and sortname get corrupted
 																//so if you want to use them for something else
 																//you'll need to malloc them into a variable.
-	fullname = strcpy(fullname,sortpath);
-	fullname = strcat(fullname,"/");
-	fullname = strcat(fullname,sortname); // Sets the full path name 
+	fullname = strcpy(fullname, sortpath);
+	fullname = strcat(fullname, "/");
+	fullname = strcat(fullname, sortname); // Sets the full path name 
 	
 	
 	
 	printf("[%i] %s\n",getpid(),fullname);
+	
+	sort(argv);
+	
+	return 0;
+	
+} //end of 'main' function
+
+void sort(char **argv){
+	
 	char* buffer = malloc(1000);
 	char* hold = buffer;
 	int size = 128;
-	i = 0;
+	int i = 0;
 	FILE* fp = fopen(fullname,"r");
 	
 	fgets(buffer, 1000, fp);
@@ -137,17 +228,6 @@ int main(int argc, char **argv)
 	//Also you may need to fix the input error checking.
 	//If you want to output to a different path you'll need to do something in printcsv
 	//to write to the right output
-
-
-	if (argv[1][0] != '-' || argv[1][1] != 'c'){ //argument 1
-		printf("ERROR: Expected '-c' as first argument.\n");
-		return -1;
-	}
-	
-	if (argv[2] == '\0'){ // argument 2
-		printf("ERROR: Invalid input, one or more arguments are null.\n");
-		return -1;
-	}
 	
 	char *token = strsep(&buffer, ",");
 	int isin = 0;
@@ -164,14 +244,15 @@ int main(int argc, char **argv)
 	
 	if(isin == 0){ //argument does not match column category
 		printf("ERROR: Malformed input.\n");
-		return -1;
+		return;
 	}
 	
+	/*
 	if(argv[3] != '\0'){ //extra argument
 		printf("ERROR: Extra argument received.\n");
 		return -1;
 	}
-	
+	*/
 	
 	category = argv[2]; //category/column that needs to be sorted
 	
@@ -452,13 +533,12 @@ int main(int argc, char **argv)
 		free(array[index].country);
 		free(array[index].content_rating);
 	}
+	
 	free(fullname);
 	free(array);
 	free(buffer);
 	
-	return 0;
-	
-} //end of 'main' function
+}
 
 void trim(char* token) {
 	
@@ -488,6 +568,7 @@ void trim(char* token) {
 	}
 	
 } //end of 'trim' function
+
 //fullname
 void printCSV(struct movie* array, int m, int n) {
 	
