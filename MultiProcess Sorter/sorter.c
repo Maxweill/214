@@ -31,25 +31,30 @@
 int numchild;
 char *sortname;	//Name of the file being sorted
 char *sortpath;	//Path leading to the file being sorted
+char *outputname;
 char *fullname;
 char *category;
+char *output_dir;
 int num_processes;
+int hasoutput;
+int hasinput;
 
 int main(int argc, char **argv) {
-	
+	int originalPID = getpid();
 	// Argument 2 -> category (e.g. "movie_title")
 	if (argv[2] == '\0' || argv[2] == NULL){
 		printf("ERROR: Invalid input, one or more arguments are null.\n");
 		return -1;
 	}
 	
-	char *input_dir; 
-	char *output_dir;
-
+	char *input_dir=malloc(4096); 
+	output_dir = malloc(4096);
+	outputname = malloc(4096);
 	DIR *dir;
 	char path[4096];
 	num_processes = 0;
-	
+	hasoutput=0;
+	hasinput=0;
 	// Case 1 - "./sorter -c movie_title"
 	if(argc == 3){
 		
@@ -72,21 +77,34 @@ int main(int argc, char **argv) {
 	
 	// Case 2 & 3 - "./sorter -c movie_title -d [full directory]" or "./sorter -c movie_title -d [local directory]"
 	// 				"./sorter -c movie_title -d [full directory]" -o [full directory]"
-	} else if(argc >= 5){
-		
+	} 
+	else if(argc == 5)
+	{
+	
 		// Argument 1 -> "-c"
-		if (strcmp(argv[1], "-c") != 0){
+		if (strcmp(argv[1], "-c") != 0)
+		{
 			printf("ERROR: Expected '-c' as first argument.\n");
 			return -1;
 		}
 		
 		// Argument 3 -> "-d"
-		if (strcmp(argv[3],"-d") != 0 || argv[3] == NULL){
-			printf("ERROR: Expected '-d' as third argument.\n");
+		if (strcmp(argv[3],"-d") == 0)
+		{
+
+			hasinput=1;
+		}
+		//Argument 3 -> "-o"
+		else if (strcmp(argv[3],"-o")==0)
+		{
+			hasoutput = 1;
+			
+		}
+		else
+		{
+			printf("ERROR: Expected '-o' or '-d' as first argument.\n");
 			return -1;
 		}
-		
-		input_dir = argv[4];
 		
 		// remove slash at the end of directory
 		//if(input_dir[strlen(input_dir) - 1] == '/'){
@@ -94,35 +112,84 @@ int main(int argc, char **argv) {
 		//}
 		
 		//printf("check: %s\n", input_dir);
-
-		if(argc >= 6){
+		if (hasinput)
+		{
+						strcpy(input_dir,argv[4]);
+			sortpath = input_dir;
+			int p;
+			for(p = 0; p < strlen(input_dir); p++)
+			{ //copy input directory to path
+				path[p] = input_dir[p];
+			}
+			dir = opendir(path);
+		}
+		
+		if(hasoutput)
+		{
 			
-			// Argument 5 -> "-o"
-			if (strcmp(argv[5],"-o") != 0){
-				printf("ERROR: Expected '-o' as fifth argument.\n");
+			strcpy(output_dir,argv[4]);
+			
+			
+			if(getcwd(path, sizeof(path)) != NULL)
+			{
+			//printf("%s\n",path);
+			} 
+			else 
+			{
+			printf("Error with getcwd");
 			return -1;
 			}
 			
-			output_dir = argv[6];
-		} 
-		
-		sortpath = input_dir;
-		int p;
-		for(p = 0; p < strlen(input_dir); p++){ //copy input directory to path
-			path[p] = input_dir[p];
+			sortpath = path;
+			dir = opendir(path);
 		}
-		dir = opendir(path);
 		
 		//printf("directory: %s\n", path);
 
-	} else {
+	}
+	 
+	else if(argc == 7)
+	{	
+		// Argument 5 -> "-d"
+		if (strcmp(argv[3],"-d") == 0)
+		{
+			strcpy(input_dir,argv[4]);
+			hasinput=1;
+		}
+		//Argument 7 -> "-o"
+		if (strcmp(argv[5],"-o")==0)
+		{
+			hasoutput = 1;
+			strcpy(output_dir,argv[6]);
+		}
+		else
+		{
+			printf("ERROR: Incorrect argument entered.\n");
+			return -1;
+		}
+		
+		// remove slash at the end of directory
+		//if(input_dir[strlen(input_dir) - 1] == '/'){
+		//	input_dir[strlen(input_dir) - 1] = '\0';
+		//}
+		
+		//printf("check: %s\n", input_dir);
+			
+			sortpath = input_dir;
+			int p;
+			for(p = 0; p < strlen(input_dir); p++)
+			{ //copy input directory to path
+				path[p] = input_dir[p];
+			}
+			dir = opendir(path);		
+	}
+	else {
 		printf("error\n"); //other: arguments not valid -> will edit message later
 		return -1;
 	}
 	
 	printf("Initial PID: %d\n", getpid());
 	printf("PIDS of all child processes: ");
-	fflush(stdout);
 	
 	numchild = 0; 	// Number of children a process spawns
 	//Directory and directory structure
@@ -163,25 +230,42 @@ int main(int argc, char **argv) {
 				else
 				{
 					char* extension = strrchr(str->d_name,'.'); // gets the extension of the file
-					if(extension!=NULL)
+					char* sorted = strstr(str->d_name,"-sorted-");
+					if (sorted != NULL)
+					{
+							//printf("\n %s is already sorted, skipping. \n",str->d_name);
+					}
+					
+					
+					if(extension!=NULL && sorted==NULL)
 					{
 						if(strcmp(extension,".csv")==0)			// ALL CSV FILES GO HERE
 						{
-							int pid = fork(); // fork on here
-							if(pid == 0) // if its  a child
+							if(checkvalid(path,str->d_name))
 							{
+							
+								int pid = fork(); // fork on here
+								if(pid == 0) // if its  a child
+								{
 								
-								printf("%d, ", getpid());
-								fflush(stdout);
-								numchild = 0; //reset number of children
-								sortname = str->d_name; //set the name of the file
-								sortpath = path; //set the path of the file
-								break; //exit look
+									printf("%d, ", getpid());
+									fflush(stdout);
+									numchild = 0; //reset number of children
+									sortname = str->d_name; //set the name of the file
+									sortpath = path; //set the path of the file
+									break; //exit look
+								}
+								else
+								{		
+									numchild++; //increment number of children in parent
+								}
+							
 							}
 							else
-							{		
-								numchild++; //increment number of children in parent
-							}			
+							{
+									//printf("\nImproperly formatted file, skipping: %s\n", str->d_name);
+							}
+										
 						}
 					}
 					
@@ -194,32 +278,45 @@ int main(int argc, char **argv) {
 	//at this point every file and every directory has its own process
 
 	int i;
+	int exitnum;
 	if(sortpath != NULL && sortname == NULL) // goes in here if its a directory fork.
 	{
 			for(i = numchild;i>0;i--) // wait for all the children that the directory spawned. 
 									  //returns if a directory has no children, or finishes waiting
 			{
 				//printf("[%i] waiting on child #%i\n", getpid(),i);
-				wait();
+				int status;
+				wait(&status);
+				//printf("Child %i returns: %i \n",i,WEXITSTATUS(status));
+				exitnum+=WEXITSTATUS(status);
 				//printf("[%i] wait [%i] complete\n",getpid(),i);
 			}
-		return 0;
+		if(originalPID == getpid())
+		{
+				printf("\nTotal number of processes: %i\n",exitnum+numchild+1);
+		}
+		
+		return numchild+exitnum;
+
 	}	
 	
 	//printf("[%i] %s/%s\n",getpid(),sortpath,sortname);
 	fullname = malloc(4096); //for some reason sortpath and sortname get corrupted
 																//so if you want to use them for something else
 																//you'll need to malloc them into a variable.
-	fullname = strcpy(fullname, sortpath);
-	fullname = strcat(fullname, "/");
-	fullname = strcat(fullname, sortname); // Sets the full path name 
-	
+		outputname = strcpy(outputname,sortname);											
+		fullname = strcpy(fullname, sortpath);
+		fullname = strcat(fullname, "/");
+		fullname = strcat(fullname, sortname); // Sets the full path name 
 	
 	
 	//printf("[%i] %s\n",getpid() ,fullname);
 	
-	sort(argv);
+	printf("\n According to this, the value of hasoutput is: %i\n",hasoutput);
 	
+	sort(argv);
+	free(input_dir);
+	free(output_dir);
 	return 0;
 	
 } //end of 'main' function
@@ -253,7 +350,7 @@ void sort(char **argv){
 	}
 	
 	if(isin == 0){ //argument does not match column category
-		printf("ERROR: Malformed input.\n");
+		printf("\nERROR: Argument not found in CSV header. \n");
 		return;
 	}
 	
@@ -580,26 +677,78 @@ void trim(char* token) {
 } //end of 'trim' function
 
 //fullname
+int checkvalid(char* path, char* filename)
+{
+	char* checkpath = malloc(4096);
+	strcpy(checkpath,path);
+	strcat(checkpath,"/");
+	strcat(checkpath,filename);
+	//printf("\n%s\n",checkpath);
+	FILE* check = fopen(checkpath,"r");						
+	char* checkbuf=malloc(5000);
+int cnt = 0;
+	fgets(checkbuf,5000,check);
+	//printf("\n%s\n",checkbuf);
+							
+							
+	char *token = strsep(&checkbuf, ",");
+	while(token != NULL)
+	{
+		token = strsep(&checkbuf,",");
+		//printf("\n%s\n",token);
+		cnt++;
+	}
+
+	//printf("\n%i\n",cnt);						
+	free(checkbuf);
+	fclose(check);
+	free(checkpath);
+
+	if (cnt != 28)
+	{
+		return 0;
+	}
+	
+	return 1;
+	
+}
+
 void printCSV(struct movie* array, int m, int n) {
 	
 	FILE *fp2;
 	int i;
-	//you wont be able to use
 	
+	//printf("\n According to this, the value of hasoutput is: %i\n",hasoutput);
 	
-	char*extension = strrchr(fullname,'.'); //properly formats the name of the output file
-	strcpy(extension,"-sorted-");
-	strcat(extension,category);
-	strcat(extension,".csv");
-	//printf("%s\n",fullname);
-	//char* filename = name;
-	//filename = strcat(name, ".csv");
-	fp2 = fopen(fullname, "w+");
+	if(hasoutput)
+	{
+		mkdir(output_dir,0777);
+		strcat(output_dir,"/");
+		strcat(output_dir,outputname);
+		char* file=strrchr(output_dir,'.');
+		strcpy(file,"-sorted-");
+		strcat(file,category);
+		strcat(file,".csv");
+		printf("\n We should be writing to: %s\n",output_dir);
+		
+		fp2 = fopen(output_dir, "w+");
+	}
+	else
+	{
+		
+		char*extension = strrchr(fullname,'.'); //properly formats the name of the output file
+		strcpy(extension,"-sorted-");
+		strcat(extension,category);
+		strcat(extension,".csv");
+		//printf("%s\n",fullname);
+		//char* filename = name;
+		//filename = strcat(name, ".csv");
 	
+		fp2 = fopen(fullname, "w+");
+	}
 	// Print column titles
 	fprintf(fp2, "color,director_name,num_critic_for_reviews,duration,director_facebook_likes,actor_3_facebook_likes,actor_2_name,actor_1_facebook_likes,gross,genres,actor_1_name,movie_title,num_voted_users,cast_total_facebook_likes, actor_3_name,facenumber_in_poster,plot_keywords,movie_imdb_link,num_user_for_reviews,language,country,content_rating,budget,title_year,actor_2_facebook_likes,imdb_score,aspect_ratio,movie_facebook_likes\n");
 	//fprintf(stdout, "color,director_name,num_critic_for_reviews,duration,director_facebook_likes,actor_3_facebook_likes,actor_2_name,actor_1_facebook_likes,gross,genres,actor_1_name,movie_title,num_voted_users,cast_total_facebook_likes, actor_3_name,facenumber_in_poster,plot_keywords,movie_imdb_link,num_user_for_reviews,language,country,content_rating,budget,title_year,actor_2_facebook_likes,imdb_score,aspect_ratio,movie_facebook_likes\n");
-	
 	// Print each struct (each movie is 1 row with 28 columns)
 	for(i = 0; i < m; i++){
 		

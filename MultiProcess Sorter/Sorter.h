@@ -62,6 +62,8 @@ void mergesortHelper(struct movie* arr, char* category, int left, int right, int
 /* Compares two strings to determine their order during the sort (lexicographical ordering) */
 int compareStrings(char* str1, char* str2);
 
+int checkvalid(char* path, char* filename);
+
 void sort(char **argv);
 
 //Suggestion: prototype a mergesort function
