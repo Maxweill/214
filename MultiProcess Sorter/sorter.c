@@ -6,13 +6,14 @@
  * Maxwell Mucha
  * 
  * TODO LIST:
- * 1.) Works, but need to fix up reading input directory paths ("./sorter -c <category> -d <dir path>") [local and non-local]
+ * 1.) Error checking if directory path is incorrect/invalid
  * 2.) Get output directory working ("-o <output dir path>")
  * 3.) Giving proper output of project:
- * 			1.) Initial PID
- * 			2.) PIDS of all child processes: AAA,BBB,CCC,DDD,EEE,FFF, etc
- * 			3.) Total number of processes: ZZZZZ
- * 4.) Trying to figure out and fixing the few errors from our mergesort/sorter from Project 0 (use strcmp instead or try figuring out how to alphabetically sort)
+ * 			1.) Initial PID --> done
+ * 			2.) PIDS of all child processes: AAA,BBB,CCC,DDD,EEE,FFF, etc --> done
+ * 			3.) Total number of processes: ZZZZZ --> made global variable 'num_processes' but still working on it
+ * 4.) Wrapping arguments that contain directory paths with quotes if they have space(s)??? (check piazza cause Tjang said that, but it makes no sense b/c space as input signals next argument)
+ * 5.) Trying to figure out and fixing the few errors from our mergesort/sorter from Project 0 (use strcmp instead or try figuring out how to alphabetically sort) -> working on it
  * 
  */
 
@@ -32,6 +33,7 @@ char *sortname;	//Name of the file being sorted
 char *sortpath;	//Path leading to the file being sorted
 char *fullname;
 char *category;
+int num_processes;
 
 int main(int argc, char **argv) {
 	
@@ -46,6 +48,7 @@ int main(int argc, char **argv) {
 
 	DIR *dir;
 	char path[4096];
+	num_processes = 0;
 	
 	// Case 1 - "./sorter -c movie_title"
 	if(argc == 3){
@@ -117,10 +120,9 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 	
-	int PID = getpid();
-	printf("Initial PID: %d\n", PID);
+	printf("Initial PID: %d\n", getpid());
 	printf("PIDS of all child processes: ");
-	printf("\n"); //for now
+	fflush(stdout);
 	
 	numchild = 0; 	// Number of children a process spawns
 	//Directory and directory structure
@@ -134,11 +136,17 @@ int main(int argc, char **argv) {
 		{
 			if((strcmp(str->d_name,"..") != 0) && (strcmp(str->d_name,".") != 0)) //checks for .  and .. directories
 			{
+				num_processes++;
+				
 				if(str->d_type == DT_DIR) // if its a directory
 				{
 					int pid = fork(); // fork here
 					if(pid == 0) //if its a child
 					{
+						
+						printf("%d, ", getpid());
+						fflush(stdout);
+						
 						closedir(dir); //close the original directory
 						strcat(path,"/"); //append the folder to the path
 						strcat(path, str->d_name);
@@ -162,6 +170,9 @@ int main(int argc, char **argv) {
 							int pid = fork(); // fork on here
 							if(pid == 0) // if its  a child
 							{
+								
+								printf("%d, ", getpid());
+								fflush(stdout);
 								numchild = 0; //reset number of children
 								sortname = str->d_name; //set the name of the file
 								sortpath = path; //set the path of the file
@@ -205,7 +216,7 @@ int main(int argc, char **argv) {
 	
 	
 	
-	printf("[%i] %s\n",getpid(),fullname);
+	//printf("[%i] %s\n",getpid() ,fullname);
 	
 	sort(argv);
 	
@@ -223,7 +234,6 @@ void sort(char **argv){
 	
 	fgets(buffer, 1000, fp);
 
-
 	//You'll need to edit the stuff below here to make sure the input path is the correct one.
 	//Also you may need to fix the input error checking.
 	//If you want to output to a different path you'll need to do something in printcsv
@@ -234,7 +244,7 @@ void sort(char **argv){
 	
 	while(token != NULL){
 		//printf("%s\n",token);
-		if(strcmp(token, argv[2]) == 0 || strcmp(argv[2], "movie_facebook_likes")==0){	
+		if(strcmp(token, argv[2]) == 0 || strcmp(argv[2], "movie_facebook_likes") == 0){	
 			//printf("%s\n",token);
 			isin = 1;
 			break;
