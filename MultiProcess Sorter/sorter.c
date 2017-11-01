@@ -6,14 +6,11 @@
  * Maxwell Mucha
  * 
  * TODO LIST:
- * 1.) Error checking if directory path is incorrect/invalid
- * 2.) Get output directory working ("-o <output dir path>")
- * 3.) Giving proper output of project:
- * 			1.) Initial PID --> done
- * 			2.) PIDS of all child processes: AAA,BBB,CCC,DDD,EEE,FFF, etc --> done
- * 			3.) Total number of processes: ZZZZZ --> made global variable 'num_processes' but still working on it
- * 4.) Wrapping arguments that contain directory paths with quotes if they have space(s)??? (check piazza cause Tjang said that, but it makes no sense b/c space as input signals next argument)
- * 5.) Trying to figure out and fixing the few errors from our mergesort/sorter from Project 0 (use strcmp instead or try figuring out how to alphabetically sort) -> working on it
+ * 1.) Fixing PID list and Processes
+ * 	      -> Problem: despite skipping already sorted CSV files, our program still forks the files -> List of PIDs and # of processes are incorrec
+ * 			 (it counts all the forked stuff)
+ * 2.) Trying to figure out and fixing the few errors from our mergesort/sorter from Project 0 (use strcmp instead or try figuring 
+ *     out how to alphabetically sort) -> working on it
  * 
  */
 
@@ -27,6 +24,7 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 
 int numchild;
 char *sortname;	//Name of the file being sorted
@@ -40,6 +38,7 @@ int hasoutput;
 int hasinput;
 
 int main(int argc, char **argv) {
+	
 	int originalPID = getpid();
 	// Argument 2 -> category (e.g. "movie_title")
 	if (argv[2] == '\0' || argv[2] == NULL){
@@ -68,7 +67,7 @@ int main(int argc, char **argv) {
 		if(getcwd(path, sizeof(path)) != NULL){
 			//printf("%s\n",path);
 		} else {
-			printf("Error with getcwd");
+			printf("ERROR: Error with getcwd (getting the current working directory).");
 			return -1;
 		}
 		
@@ -102,19 +101,16 @@ int main(int argc, char **argv) {
 		}
 		else
 		{
-			printf("ERROR: Expected '-o' or '-d' as first argument.\n");
+			printf("ERROR: Expected '-o' or '-d' as third argument.\n");
 			return -1;
 		}
-		
-		// remove slash at the end of directory
-		//if(input_dir[strlen(input_dir) - 1] == '/'){
-		//	input_dir[strlen(input_dir) - 1] = '\0';
-		//}
 		
 		//printf("check: %s\n", input_dir);
 		if (hasinput)
 		{
-						strcpy(input_dir,argv[4]);
+			strcpy(input_dir, argv[4]);
+			removeQuotes(input_dir);
+			
 			sortpath = input_dir;
 			int p;
 			for(p = 0; p < strlen(input_dir); p++)
@@ -127,8 +123,8 @@ int main(int argc, char **argv) {
 		if(hasoutput)
 		{
 			
-			strcpy(output_dir,argv[4]);
-			
+			strcpy(output_dir, argv[4]);
+			removeQuotes(output_dir);
 			
 			if(getcwd(path, sizeof(path)) != NULL)
 			{
@@ -136,7 +132,7 @@ int main(int argc, char **argv) {
 			} 
 			else 
 			{
-			printf("Error with getcwd");
+			printf("ERROR: Error with getcwd (getting the current working directory).");
 			return -1;
 			}
 			
@@ -154,6 +150,7 @@ int main(int argc, char **argv) {
 		if (strcmp(argv[3],"-d") == 0)
 		{
 			strcpy(input_dir,argv[4]);
+			removeQuotes(input_dir);
 			hasinput=1;
 		}
 		//Argument 7 -> "-o"
@@ -161,17 +158,13 @@ int main(int argc, char **argv) {
 		{
 			hasoutput = 1;
 			strcpy(output_dir,argv[6]);
+			removeQuotes(output_dir);
 		}
 		else
 		{
 			printf("ERROR: Incorrect argument entered.\n");
 			return -1;
 		}
-		
-		// remove slash at the end of directory
-		//if(input_dir[strlen(input_dir) - 1] == '/'){
-		//	input_dir[strlen(input_dir) - 1] = '\0';
-		//}
 		
 		//printf("check: %s\n", input_dir);
 			
@@ -181,15 +174,17 @@ int main(int argc, char **argv) {
 			{ //copy input directory to path
 				path[p] = input_dir[p];
 			}
+			
 			dir = opendir(path);		
 	}
 	else {
-		printf("error\n"); //other: arguments not valid -> will edit message later
+		printf("ERROR: There is an error in the given arguments.\n");
 		return -1;
 	}
 	
 	printf("Initial PID: %d\n", getpid());
 	printf("PIDS of all child processes: ");
+	fflush(stdout);
 	
 	numchild = 0; 	// Number of children a process spawns
 	//Directory and directory structure
@@ -312,11 +307,14 @@ int main(int argc, char **argv) {
 	
 	//printf("[%i] %s\n",getpid() ,fullname);
 	
-	printf("\n According to this, the value of hasoutput is: %i\n",hasoutput);
+	//printf("\n According to this, the value of hasoutput is: %i\n",hasoutput);
 	
 	sort(argv);
+	
+	free(outputname);
 	free(input_dir);
 	free(output_dir);
+	
 	return 0;
 	
 } //end of 'main' function
@@ -353,13 +351,6 @@ void sort(char **argv){
 		printf("\nERROR: Argument not found in CSV header. \n");
 		return;
 	}
-	
-	/*
-	if(argv[3] != '\0'){ //extra argument
-		printf("ERROR: Extra argument received.\n");
-		return -1;
-	}
-	*/
 	
 	category = argv[2]; //category/column that needs to be sorted
 	
@@ -645,6 +636,8 @@ void sort(char **argv){
 	free(array);
 	free(buffer);
 	
+	fclose(fp);
+	
 }
 
 void trim(char* token) {
@@ -729,7 +722,7 @@ void printCSV(struct movie* array, int m, int n) {
 		strcpy(file,"-sorted-");
 		strcat(file,category);
 		strcat(file,".csv");
-		printf("\n We should be writing to: %s\n",output_dir);
+		//printf("\n We should be writing to: %s\n",output_dir);
 		
 		fp2 = fopen(output_dir, "w+");
 	}
@@ -763,7 +756,7 @@ void printCSV(struct movie* array, int m, int n) {
 		
 	}
 	//printf("[%i] FILEPATH IS STILL\n %s/%s\n",getpid(),sortpath,sortname);
-	//fclose(fp);
+	//fclose(fp2);
 	
 	
 	//for(i = 0; i < m; i++){
@@ -802,3 +795,23 @@ void printCSV(struct movie* array, int m, int n) {
 	
 	
 } //end of 'printCSV' function
+
+void removeQuotes(char *input){
+	
+	int i;
+	
+	if(input[0] == '\"' || input[0] == '"'){
+		
+		for(i = 0; i < strlen(input); i++){
+			input[i] = input[i+1];
+		}
+		
+	}
+	
+	if(input[strlen(input)-1] == '"' || input[strlen(input)-1] == '\"'){
+		input[strlen(input)-1] = '\0';
+	}
+	
+	//printf("output: %s\n", input);
+
+}
