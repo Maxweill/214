@@ -66,6 +66,8 @@ int checkvalid(char* path, char* filename);
 
 void sort(char **argv);
 
+void removeQuotes(char *input);
+
 //Suggestion: prototype a mergesort function
 
 #endif
