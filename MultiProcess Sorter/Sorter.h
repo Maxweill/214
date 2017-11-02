@@ -62,10 +62,13 @@ void mergesortHelper(struct movie* arr, char* category, int left, int right, int
 /* Compares two strings to determine their order during the sort (lexicographical ordering) */
 int compareStrings(char* str1, char* str2);
 
+/* Checks if a CSV file is valid */
 int checkvalid(char* path, char* filename);
 
+/* Tokenizes CSV file and sorts by calling mergesort functions */
 void sort(char **argv);
 
+/* Removes quotes from directory path (if given) - quotation marks must be given with directories that have folders with space(s) in its name or else argv & argc fail/glitch */
 void removeQuotes(char *input);
 
 //Suggestion: prototype a mergesort function
