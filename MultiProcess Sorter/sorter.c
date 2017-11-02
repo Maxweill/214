@@ -1,16 +1,11 @@
 /*
  * sorter.c
  * 
+ * Project 1: Multi-Process Sorting
+ * 
  * Authors: 
  * Ronak Gandhi
  * Maxwell Mucha
- * 
- * TODO LIST:
- * 1.) Fixing PID list and Processes
- * 	      -> Problem: despite skipping already sorted CSV files, our program still forks the files -> List of PIDs and # of processes are incorrec
- * 			 (it counts all the forked stuff)
- * 2.) Trying to figure out and fixing the few errors from our mergesort/sorter from Project 0 (use strcmp instead or try figuring 
- *     out how to alphabetically sort) -> working on it
  * 
  */
 
@@ -33,7 +28,7 @@ char *outputname;
 char *fullname;
 char *category;
 char *output_dir;
-int num_processes;
+//int num_processes;
 int hasoutput;
 int hasinput;
 
@@ -46,14 +41,22 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 	
+	if(strcmp(argv[2], "color") == 0 || strcmp(argv[2], "director_name") == 0 || strcmp(argv[2], "actor_2_name") == 0 || strcmp(argv[2], "genres") == 0 || strcmp(argv[2], "actor_1_name") == 0 || strcmp(argv[2], "movie_title") == 0 || strcmp(argv[2], "actor_3_name") == 0 || strcmp(argv[2], "plot_keywords") == 0 || strcmp(argv[2], "movie_imdb_link") == 0 || strcmp(argv[2], "language") == 0 || strcmp(argv[2], "country") == 0 || strcmp(argv[2], "content_rating") == 0 || strcmp(argv[2], "num_critic_for_reviews") == 0 || strcmp(argv[2], "duration") == 0 || strcmp(argv[2], "director_facebook_likes") == 0 || strcmp(argv[2], "actor_3_facebook_likes") == 0 || strcmp(argv[2], "actor_1_facebook_likes") == 0 || strcmp(argv[2], "gross") == 0 || strcmp(argv[2], "num_voted_users") == 0 || strcmp(argv[2], "cast_total_facebook_likes") == 0 || strcmp(argv[2], "facenumber_in_poster") == 0 || strcmp(argv[2], "num_user_for_reviews") == 0 || strcmp(argv[2], "budget") == 0 || strcmp(argv[2], "title_year") == 0 || strcmp(argv[2], "actor_2_facebook_likes") == 0 || strcmp(argv[2], "movie_facebook_likes") == 0 || strcmp(argv[2], "imdb_score") == 0 || strcmp(argv[2], "aspect_ratio") == 0){
+		//valid input
+	} else {
+		printf("ERROR: Invalid input, argument two must contain a valid movie category. \n");
+		return -1;
+	}
+	
 	char *input_dir=malloc(4096); 
 	output_dir = malloc(4096);
 	outputname = malloc(4096);
 	DIR *dir;
 	char path[4096];
-	num_processes = 0;
+	//num_processes = 0;
 	hasoutput=0;
 	hasinput=0;
+	
 	// Case 1 - "./sorter -c movie_title"
 	if(argc == 3){
 		
@@ -72,7 +75,11 @@ int main(int argc, char **argv) {
 		}
 		
 		sortpath = path;
-		dir = opendir(path);
+		if((dir = opendir(path)) == NULL){
+			printf("ERROR: Input directory is invalid or incorrect\n");
+			return -1;
+        }
+		
 	
 	// Case 2 & 3 - "./sorter -c movie_title -d [full directory]" or "./sorter -c movie_title -d [local directory]"
 	// 				"./sorter -c movie_title -d [full directory]" -o [full directory]"
@@ -117,7 +124,10 @@ int main(int argc, char **argv) {
 			{ //copy input directory to path
 				path[p] = input_dir[p];
 			}
-			dir = opendir(path);
+			if((dir = opendir(path)) == NULL){
+				printf("ERROR: Input directory is invalid or incorrect\n");
+				return -1;
+			}
 		}
 		
 		if(hasoutput)
@@ -175,7 +185,10 @@ int main(int argc, char **argv) {
 				path[p] = input_dir[p];
 			}
 			
-			dir = opendir(path);		
+			if((dir = opendir(path)) == NULL){
+				printf("ERROR: Input directory is invalid or incorrect\n");
+				return -1;
+			}		
 	}
 	else {
 		printf("ERROR: There is an error in the given arguments.\n");
@@ -198,10 +211,12 @@ int main(int argc, char **argv) {
 		{
 			if((strcmp(str->d_name,"..") != 0) && (strcmp(str->d_name,".") != 0)) //checks for .  and .. directories
 			{
-				num_processes++;
+				
+				//num_processes++;
 				
 				if(str->d_type == DT_DIR) // if its a directory
 				{
+					
 					int pid = fork(); // fork here
 					if(pid == 0) //if its a child
 					{
@@ -238,7 +253,7 @@ int main(int argc, char **argv) {
 						{
 							if(checkvalid(path,str->d_name))
 							{
-							
+
 								int pid = fork(); // fork on here
 								if(pid == 0) // if its  a child
 								{
@@ -328,18 +343,13 @@ void sort(char **argv){
 	FILE* fp = fopen(fullname,"r");
 	
 	fgets(buffer, 1000, fp);
-
-	//You'll need to edit the stuff below here to make sure the input path is the correct one.
-	//Also you may need to fix the input error checking.
-	//If you want to output to a different path you'll need to do something in printcsv
-	//to write to the right output
 	
 	char *token = strsep(&buffer, ",");
 	int isin = 0;
 	
 	while(token != NULL){
 		//printf("%s\n",token);
-		if(strcmp(token, argv[2]) == 0 || strcmp(argv[2], "movie_facebook_likes") == 0){	
+		if(strcmp(token, argv[2]) == 0 || strcmp(argv[2], "movie_facebook_likes") == 0 || strcmp(argv[2], "actor_3_name") == 0){	
 			//printf("%s\n",token);
 			isin = 1;
 			break;
